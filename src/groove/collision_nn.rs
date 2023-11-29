@@ -3,8 +3,8 @@ use crate::utils_rust::{geometry_utils, yaml_utils};
 use crate::spacetime::robot::Robot;
 use nalgebra::{DMatrix, DVector};
 
-fn relu(x: f64) -> f64 {
-    x.max(0.0)
+fn relu(x: &mut f64) {
+    *x = x.max(0.0);
 }
 
 fn relu_prime(x: f64) -> f64 {
