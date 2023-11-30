@@ -101,39 +101,6 @@ impl ObjectiveTrait for MatchEEQuatGoals {
     }
 }
 
-pub struct NNSelfCollision;
-impl ObjectiveTrait for NNSelfCollision {
-    fn call(&self, x: &[f64], v: &vars::RelaxedIKVars, frames: &Vec<(Vec<nalgebra::Vector3<f64>>, Vec<nalgebra::UnitQuaternion<f64>>)>) -> f64 {
-        let mut x_val = v.collision_nn.predict(&x.to_vec());
-        groove_loss(x_val, 0., 2, 2.1, 0.0002, 4)
-    }
-
-    fn call_lite(&self, x: &[f64], v: &vars::RelaxedIKVars, ee_poses: &Vec<(nalgebra::Vector3<f64>, nalgebra::UnitQuaternion<f64>)>) -> f64 {
-        let mut x_val = v.collision_nn.predict(&x.to_vec());
-        groove_loss(x_val, 0., 2, 2.1, 0.0002, 4)
-    }
-
-    fn gradient(&self, x: &[f64], v: &vars::RelaxedIKVars, frames: &Vec<(Vec<nalgebra::Vector3<f64>>, Vec<nalgebra::UnitQuaternion<f64>>)>) -> (f64, Vec<f64>) {
-        let (x_val, mut grad) = v.collision_nn.gradient(&x.to_vec());
-        let g_prime = groove_loss_derivative(x_val, 0., 2, 2.1, 0.0002, 4);
-        for i in 0..grad.len() {
-            grad[i] *= g_prime;
-        }
-        (x_val, grad)
-    }
-
-    fn gradient_lite(&self, x: &[f64], v: &vars::RelaxedIKVars, ee_poses: &Vec<(nalgebra::Vector3<f64>, nalgebra::UnitQuaternion<f64>)>) -> (f64, Vec<f64>) {
-        let (x_val, mut grad) = v.collision_nn.gradient(&x.to_vec());
-        let g_prime = groove_loss_derivative(x_val, 0., 2, 2.1, 0.0002, 4);
-        for i in 0..grad.len() {
-            grad[i] *= g_prime;
-        }
-        (x_val, grad)
-    }
-
-    fn gradient_type(&self) -> usize {return 0}
-}
-
 pub struct EnvCollision {
     pub arm_idx: usize
 }

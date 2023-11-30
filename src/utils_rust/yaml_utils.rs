@@ -26,7 +26,6 @@ pub struct InfoFileParser {
     pub ee_fixed_joints: Vec<String>,
     pub starting_config: Vec<f64>,
     pub collision_file_name: String,
-    pub collision_nn_file: String,
     pub path_to_src: String,
     pub axis_types: Vec<Vec<String>>,
     pub velocity_limits: Vec<f64>,
@@ -49,7 +48,6 @@ impl InfoFileParser {
         let mut ee_fixed_joints: Vec<String> = Vec::new();
         let mut starting_config: Vec<f64> = Vec::new();
         let collision_file_name = String::from(doc["collision_file_name"].as_str().unwrap());
-        let collision_nn_file = String::from(doc["collision_nn_file"].as_str().unwrap());
         let path_to_src = String::from(doc["path_to_src"].as_str().unwrap());
         let mut axis_types: Vec<Vec<String>> = Vec::new();
         let mut velocity_limits: Vec<f64> = Vec::new();
@@ -140,7 +138,7 @@ impl InfoFileParser {
             }
         }
 
-        InfoFileParser{urdf_file_name, fixed_frame, joint_names, joint_ordering, ee_fixed_joints, starting_config, collision_file_name, collision_nn_file, path_to_src, axis_types, velocity_limits,
+        InfoFileParser{urdf_file_name, fixed_frame, joint_names, joint_ordering, ee_fixed_joints, starting_config, collision_file_name, path_to_src, axis_types, velocity_limits,
             joint_limits, displacements, disp_offsets, rot_offsets, joint_types, joint_state_define_func_file}
     }
 }

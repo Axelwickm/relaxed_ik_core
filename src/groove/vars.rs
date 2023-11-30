@@ -1,7 +1,6 @@
 use nalgebra::{UnitQuaternion, Vector3, Quaternion, Point3};
 use crate::utils_rust::yaml_utils::{*};
 use crate::spacetime::robot::Robot;
-use crate::groove::collision_nn::CollisionNN;
 use crate::utils_rust::sampler::ThreadRobotSampler;
 use crate::utils_rust::file_utils::{*};
 use crate::groove::env_collision::{*};
@@ -33,7 +32,6 @@ impl Vars {
     }
 }
 
-
 pub struct RelaxedIKVars {
     pub robot: Robot,
     pub sampler: ThreadRobotSampler,
@@ -48,10 +46,10 @@ pub struct RelaxedIKVars {
     pub init_ee_quats: Vec<UnitQuaternion<f64>>,
     pub position_mode_relative: bool, // if false, will be absolute
     pub rotation_mode_relative: bool, // if false, will be absolute
-    pub collision_nn: CollisionNN,
     pub env_collision: RelaxedIKEnvCollision,
     pub objective_mode: String
 }
+
 impl RelaxedIKVars {
     pub fn from_yaml_path(fp: String, position_mode_relative: bool, rotation_mode_relative: bool) -> Self {
         let ifp = InfoFileParser::from_yaml_path(fp.clone());
@@ -70,9 +68,6 @@ impl RelaxedIKVars {
             goal_quats.push(init_ee_quats[i]);
         }
 
-        let collision_nn_path = get_path_to_src()+ "relaxed_ik_core/config/collision_nn_rust/" + ifp.collision_nn_file.as_str() + ".yaml";
-        let collision_nn = CollisionNN::from_yaml_path(collision_nn_path);
-
         let fp = get_path_to_src() + "relaxed_ik_core/config/settings.yaml";
         let fp2 = fp.clone();
         let env_collision_file = EnvCollisionFileParser::from_yaml_path(fp);
@@ -82,7 +77,7 @@ impl RelaxedIKVars {
 
         RelaxedIKVars{robot, sampler, init_state: ifp.starting_config.clone(), xopt: ifp.starting_config.clone(),
             prev_state: ifp.starting_config.clone(), prev_state2: ifp.starting_config.clone(), prev_state3: ifp.starting_config.clone(),
-            goal_positions, goal_quats, init_ee_positions, init_ee_quats, position_mode_relative, rotation_mode_relative, collision_nn, 
+            goal_positions, goal_quats, init_ee_positions, init_ee_quats, position_mode_relative, rotation_mode_relative,
             env_collision, objective_mode}
     }
 
