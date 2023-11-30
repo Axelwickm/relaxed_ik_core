@@ -164,6 +164,7 @@ impl SelfCollision {
     pub fn new(arm_idx: usize, first_link: usize, second_link: usize) -> Self {Self{arm_idx, first_link, second_link}}
 }
 impl ObjectiveTrait for SelfCollision {
+    // TODO: AAA disable SelfCollisisons
     fn call(&self, x: &[f64], v: &vars::RelaxedIKVars, frames: &Vec<(Vec<nalgebra::Vector3<f64>>, Vec<nalgebra::UnitQuaternion<f64>>)>) -> f64 {
         for i in 0..x.len() {
             if (x[i].is_nan()) {
@@ -198,61 +199,53 @@ impl ObjectiveTrait for SelfCollision {
 }
 
 
-// pub struct EnvCollision {
-//     pub arm_idx: usize
-// }
-// impl EnvCollision {
-//     pub fn new(arm_idx: usize) -> Self {Self{arm_idx}}
-// }
-// impl ObjectiveTrait for EnvCollision {
-//     fn call(&self, x: &[f64], v: &vars::RelaxedIKVars, frames: &Vec<(Vec<nalgebra::Vector3<f64>>, Vec<nalgebra::UnitQuaternion<f64>>)>) -> f64 {
-//         // let start = PreciseTime::now();\
+pub struct EnvCollision {
+    pub arm_idx: usize
+}
+impl EnvCollision {
+    pub fn new(arm_idx: usize) -> Self {Self{arm_idx}}
+}
+impl ObjectiveTrait for EnvCollision {
+    fn call(&self, x: &[f64], v: &vars::RelaxedIKVars, frames: &Vec<(Vec<nalgebra::Vector3<f64>>, Vec<nalgebra::UnitQuaternion<f64>>)>) -> f64 {
+        // let start = PreciseTime::now();\
         
-//         for i in 0..x.len() {
-//             if (x[i].is_nan()) {
-//                 return 10.0
-//             }
-//         }
+        for i in 0..x.len() {
+            if (x[i].is_nan()) {
+                return 10.0
+            }
+        }
         
-//         let mut x_val: f64 = 0.0;
-//         let link_radius = v.env_collision.link_radius;
-//         let penalty_cutoff: f64 = link_radius * 2.0;
-//         let a = penalty_cutoff.powi(2);
-//         for (option, score) in &v.env_collision.active_obstacles[self.arm_idx] {
-//             if let Some(handle) = option {
-//                 let mut sum: f64 = 0.0;
-//                 let obstacle = v.env_collision.world.objects.get(*handle).unwrap();
-//                 let last_elem = frames[self.arm_idx].0.len() - 1;
-//                 for i in 0..last_elem {
-//                     let mut start_pt = Point3::from(frames[self.arm_idx].0[i]);
-//                      // hard coded for ur5
-//                     if (i == last_elem - 1) {
-//                         start_pt = Point3::from(frames[self.arm_idx].0[i] + 0.2 * (frames[self.arm_idx].0[i] - frames[self.arm_idx].0[i + 1]));
-//                     }
+        let mut x_val: f64 = 0.0;
+        let link_radius = 0.04; // v.env_collision.link_radius; AAA
+        let penalty_cutoff: f64 = link_radius * 2.0;
+        let a = penalty_cutoff.powi(2);
 
-//                     let end_pt = Point3::from(frames[self.arm_idx].0[i + 1]);
-//                     let segment = shape::Segment::new(start_pt, end_pt);
-//                     let segment_pos = nalgebra::one();
-//                     let dis = query::distance(obstacle.position(), obstacle.shape().deref(), &segment_pos, &segment) - link_radius;
-//                     // println!("Obstacle: {}, Link: {}, Distance: {:?}", obstacle.data().name, i, dis);
-//                     sum += a / (dis + link_radius).powi(2);
-//                 }
-//                 // println!("OBJECTIVE -> {:?}, Sum: {:?}", obstacle.data().name, sum);
-//                 x_val += sum;
-//             }
-//         }
-        
-//         // let end = PreciseTime::now();
-//         // println!("Obstacles calculating takes {}", start.to(end));
+        // new parry3d code:
+        // For each link, check if it collides with any obstacle
+        for i in 0..frames[self.arm_idx].0.len() - 1 {
+            let start_pt = Point3::from(frames[self.arm_idx].0[i]);
+            let end_pt = Point3::from(frames[self.arm_idx].0[i + 1]);
+            let segment = shape::Segment::new(start_pt, end_pt);
+            let segment_pos = nalgebra::one();
 
-//         groove_loss(x_val, 0., 2, 3.5, 0.00005, 4)
-//     }
+            // For each v.env_collision.obstacles, check if it collides with the segment
+            for (obstacle, position) in v.env_collision.obstacles.iter().zip(&v.env_collision.obstacle_positions) {
+                let dis = query::distance(position, obstacle.as_ref(), &segment_pos, &segment).unwrap() - link_radius;
+                x_val += a / (dis + link_radius).powi(2);
+            }
+        }
+     
+        // let end = PreciseTime::now();
+        // println!("Obstacles calculating takes {}", start.to(end));
 
-//     fn call_lite(&self, x: &[f64], v: &vars::RelaxedIKVars, ee_poses: &Vec<(nalgebra::Vector3<f64>, nalgebra::UnitQuaternion<f64>)>) -> f64 {
-//         let x_val = 1.0; // placeholder
-//         groove_loss(x_val, 0., 2, 2.1, 0.0002, 4)
-//     }
-// }
+        groove_loss(x_val, 0., 2, 3.5, 0.00005, 4)
+    }
+
+    fn call_lite(&self, x: &[f64], v: &vars::RelaxedIKVars, ee_poses: &Vec<(nalgebra::Vector3<f64>, nalgebra::UnitQuaternion<f64>)>) -> f64 {
+        let x_val = 1.0; // placeholder
+        groove_loss(x_val, 0., 2, 2.1, 0.0002, 4)
+    }
+}
 
 pub struct MaximizeManipulability;
 impl ObjectiveTrait for MaximizeManipulability {

@@ -1,5 +1,6 @@
 use nalgebra::{UnitQuaternion, Vector3, Vector6, Quaternion, Point3};
 use crate::spacetime::robot::Robot;
+use crate::groove::env_collision::{*};
 use crate::utils_rust::file_utils::{*};
 use time::PreciseTime;
 use std::ops::Deref;
@@ -30,7 +31,8 @@ pub struct RelaxedIKVars {
     pub goal_quats: Vec<UnitQuaternion<f64>>,
     pub tolerances: Vec<Vector6<f64>>,
     pub init_ee_positions: Vec<Vector3<f64>>,
-    pub init_ee_quats: Vec<UnitQuaternion<f64>>
+    pub init_ee_quats: Vec<UnitQuaternion<f64>>,
+    pub env_collision: RelaxedIKEnvCollision
 }
 impl RelaxedIKVars {
     pub fn from_local_settings(path_to_setting: &str) -> Self {
@@ -84,9 +86,12 @@ impl RelaxedIKVars {
             init_ee_quats.push(pose[i].1);
         }
 
+        let env_collision = RelaxedIKEnvCollision::init_collision_world(&robot);
+
         RelaxedIKVars{robot, init_state: starting_config.clone(), xopt: starting_config.clone(),
             prev_state: starting_config.clone(), prev_state2: starting_config.clone(), prev_state3: starting_config.clone(),
-            goal_positions: init_ee_positions.clone(), goal_quats: init_ee_quats.clone(), tolerances, init_ee_positions, init_ee_quats}
+            goal_positions: init_ee_positions.clone(), goal_quats: init_ee_quats.clone(), tolerances, init_ee_positions, init_ee_quats,
+            env_collision}
     }
     
     // for webassembly
@@ -111,9 +116,13 @@ impl RelaxedIKVars {
             init_ee_quats.push(pose[i].1);
         }
 
+        let env_collision = RelaxedIKEnvCollision::init_collision_world(&robot);
+
         RelaxedIKVars{robot, init_state: configs.starting_config.clone(), xopt: configs.starting_config.clone(),
             prev_state: configs.starting_config.clone(), prev_state2: configs.starting_config.clone(), prev_state3: configs.starting_config.clone(),
-            goal_positions: init_ee_positions.clone(), goal_quats: init_ee_quats.clone(), tolerances, init_ee_positions, init_ee_quats}
+            goal_positions: init_ee_positions.clone(), goal_quats: init_ee_quats.clone(), tolerances, init_ee_positions, init_ee_quats,
+            env_collision
+        }
 
     }
 

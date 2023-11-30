@@ -41,8 +41,8 @@ impl ObjectiveMaster {
             weight_priors.push(10.0);
             objectives.push(Box::new(MatchEERotaDoF::new(i, 2)));
             weight_priors.push(10.0);
-            // objectives.push(Box::new(EnvCollision::new(i)));
-            // weight_priors.push(1.0);
+            objectives.push(Box::new(EnvCollision::new(i)));
+            weight_priors.push(1.0);
             num_dofs += chain_lengths[i];
         }
 
