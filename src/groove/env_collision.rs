@@ -54,15 +54,6 @@ impl RelaxedIKEnvCollision {
         let mut obstacles = Vec::new();
         let mut obstacle_positions = Vec::new();
 
-        let cube = shape::Cuboid { half_extents: Vector3::new(0.1, 0.1, 0.1) };
-        obstacles.push(Box::new(cube) as Box<dyn shape::Shape>);
-
-        obstacle_positions.push(Isometry3::from_parts(
-            Translation3::new(10.0, 0.5, 0.0),
-            UnitQuaternion::from_euler_angles(0.0, 0.0, 0.0)
-        ));
-
-
         // let link_radius = 0.05;
         // let plane_obstacles = Vec::new();
         // let sphere_obstacles = Vec::new();
